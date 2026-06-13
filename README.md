@@ -62,7 +62,10 @@ network. `candidates` and `recommend --from-tmdb` require a credential.
 
 ## Tuning
 
-- `--genre-weight` (default 3.0): how much genres count vs keywords.
+- `--genre-weight` (default 3.0): how much genres count vs keywords when building
+  features. Global flag used by `similarity`, `neighbors`, and `recommend` —
+  it goes **before** the subcommand, e.g.
+  `movie-recommender --genre-weight 2.0 recommend --from-tmdb`.
 - `candidates --min-rating / --max-seeds / --max-candidates`: which favourites
   seed the pool and how large it gets.
 - `candidates --media-type movie,tv`: keep only these media types (default: all).
