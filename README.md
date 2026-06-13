@@ -83,8 +83,11 @@ uv run movie-recommender recommend --from-tmdb --output data/processed/recommend
 
 ## How it works
 
-- **Const (tt-id) is the key** throughout the pipeline, removing the old
-  dependency on filenames built from title + year.
+- **Const (IMDb tt-id) is the key** throughout the pipeline, removing the old
+  dependency on filenames built from title + year. TMDB-sourced candidates are
+  keyed by their real IMDb id too (resolved from movie details or, for TV, the
+  `/external_ids` endpoint), so recommendations link straight back to IMDb; the
+  TMDB id is kept alongside in the output.
 - Distances use the cosine similarity of L2-normalized vectors in [0, 1]
   directly — **no per-row min-max normalization** — so scores are comparable
   across titles.

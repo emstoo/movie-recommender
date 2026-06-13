@@ -85,7 +85,9 @@ uv run movie-recommender recommend --from-tmdb --output data/processed/recommend
 
 ## 仕組みのポイント
 
-- **Const(tt-id) をキー**に全工程を貫通させ、ファイル名（タイトル＋年）依存を排除。
+- **Const(IMDb tt-id) をキー**に全工程を貫通させ、ファイル名（タイトル＋年）依存を排除。
+  TMDB 由来の候補も実 IMDb id をキーにする（映画は詳細から、TV は `/external_ids` から
+  解決）。これによりレコメンド結果が IMDb に直接リンクでき、TMDB id も出力に併記される。
 - 距離は**行ごとの min-max 正規化を行わず**、L2正規化済みベクトルのコサイン類似度
   [0,1] をそのまま使用（作品間でスコアが比較可能）。
 - レコメンドは `Your Rating` を**平均中心化した重み**で嗜好プロファイル化。平均より
