@@ -20,10 +20,7 @@ export TMDB_API_TOKEN=eyJ...     # v4「API リードアクセストークン」
 ```
 
 IMDb からレーティングをエクスポート（Your Ratings → ⋯ → Export）し、CSV を
-`data/raw/movies.csv` に配置してください。`data/` は git 管理対象外なので、あなたの
-レーティングはローカルに留まり、コミットされることはありません。
-
-> Python は uv 管理のため、必ず `uv run` 経由で実行します。
+`data/raw/movies.csv` に配置してください。
 
 ## パイプライン
 

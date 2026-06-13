@@ -20,8 +20,7 @@ export TMDB_API_TOKEN=eyJ...     # v4 "API Read Access Token" (Authorization: Be
 ```
 
 Export your ratings from IMDb (Your Ratings → ⋯ → Export) and save the CSV to
-`data/raw/movies.csv`. The `data/` directory is git-ignored — your ratings stay
-local and are never committed.
+`data/raw/movies.csv`.
 
 ## Pipeline
 
