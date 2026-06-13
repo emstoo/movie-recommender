@@ -1,0 +1,32 @@
+[project]
+name = "movie-recommender"
+version = "0.1.0"
+description = "Recommend movies from an IMDb rating export using TMDB-derived content features."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "emstoo" }]
+keywords = ["movies", "recommender", "imdb", "tmdb", "content-based-filtering"]
+classifiers = [
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Video",
+]
+dependencies = [
+    "numpy>=2.4.0",
+    "pandas>=2.3.3",
+    "scikit-learn>=1.8.0",
+    "scipy>=1.14.0",
+    "requests>=2.32.0",
+    "pyarrow>=18.0.0",
+]
+
+[project.scripts]
+movie-recommender = "movie_recommender.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/movie_recommender"]
