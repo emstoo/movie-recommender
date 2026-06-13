@@ -5,6 +5,9 @@ to recommend from it directly. Here we ask TMDB for titles it recommends
 alongside your favourites, drop anything you have already watched, and fetch the
 same genre+keyword features so candidates live in the same feature space as your
 rated titles.
+
+Candidates are keyed by their real IMDb id (``Const``) so they share the watched
+titles' namespace; the TMDB id is kept alongside in the output.
 """
 from __future__ import annotations
 
@@ -17,7 +20,7 @@ from .tmdb import TmdbClient
 
 logger = logging.getLogger(__name__)
 
-# Synthetic index key for candidates (they have no IMDb id from this endpoint).
+# Fallback key for the rare candidate TMDB has no IMDb mapping for.
 def _candidate_key(media_type: str, tmdb_id: int) -> str:
     return f"tmdb-{media_type}-{tmdb_id}"
 
@@ -50,6 +53,7 @@ def build_candidate_pool(
     happens before feature fetches, so excluded candidates cost no API calls.
     """
     watched_ids = set(enriched.loc[enriched["tmdb_id"].notna(), "tmdb_id"].astype(int))
+    watched_imdb = set(enriched.index)
     seeds = _select_seeds(enriched, min_rating, max_seeds)
     logger.info("Gathering candidates from %d seed titles", len(seeds))
 
@@ -79,22 +83,29 @@ def build_candidate_pool(
 
     rows = []
     for (media_type, tmdb_id), (title, rec_count, language) in ranked:
-        genres, keywords = client.fetch_features(tmdb_id, media_type)
+        genres, keywords, imdb_id = client.fetch_features(tmdb_id, media_type)
+        # Prefer the real IMDb id as the key so candidates share the watched
+        # titles' Const namespace; fall back to a synthetic key when TMDB has no
+        # mapping. Skip anything that resolves to an already-watched title.
+        if imdb_id and imdb_id in watched_imdb:
+            continue
+        const = imdb_id if imdb_id else _candidate_key(media_type, tmdb_id)
         rows.append(
             {
-                "Const": _candidate_key(media_type, tmdb_id),
+                "Const": const,
                 "Title": title,
                 "genres": genres,
                 "tmdb_keywords": keywords,
                 "tmdb_id": tmdb_id,
                 "media_type": media_type,
+                "imdb_id": imdb_id,
                 "original_language": language,
                 "rec_count": rec_count,
             }
         )
 
     columns = ["Title", "genres", "tmdb_keywords", "tmdb_id",
-               "media_type", "original_language", "rec_count"]
+               "media_type", "imdb_id", "original_language", "rec_count"]
     if not rows:
         return pd.DataFrame(columns=columns).rename_axis("Const")
     return pd.DataFrame(rows).set_index("Const")

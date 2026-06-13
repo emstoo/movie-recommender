@@ -97,8 +97,15 @@ class TmdbClient:
             return data["tv_results"][0]["id"], TV
         return None
 
-    def fetch_features(self, tmdb_id: int, media_type: str = MOVIE) -> tuple[List[str], List[str]]:
-        """Return ``(genres, keywords)`` for a TMDB id (movie or TV)."""
+    def fetch_features(
+        self, tmdb_id: int, media_type: str = MOVIE
+    ) -> tuple[List[str], List[str], Optional[str]]:
+        """Return ``(genres, keywords, imdb_id)`` for a TMDB id (movie or TV).
+
+        ``imdb_id`` comes free from the movie detail payload; TV details lack it,
+        so we spend one extra ``/external_ids`` call. ``None`` when TMDB has no
+        IMDb mapping for the title.
+        """
         detail = self._get(f"/{media_type}/{tmdb_id}") or {}
         genres = [g["name"] for g in detail.get("genres", []) if g.get("name")]
 
@@ -106,7 +113,12 @@ class TmdbClient:
         # Movies return "keywords"; TV returns "results". Same shape otherwise.
         raw_keywords = kw_data.get("keywords") or kw_data.get("results") or []
         keywords = [k["name"] for k in raw_keywords if k.get("name")]
-        return genres, keywords
+
+        imdb_id = detail.get("imdb_id")  # present for movies
+        if not imdb_id and media_type == TV:
+            ext = self._get(f"/{media_type}/{tmdb_id}/external_ids") or {}
+            imdb_id = ext.get("imdb_id")
+        return genres, keywords, (imdb_id or None)
 
     def fetch_title(self, imdb_id: str) -> Optional[TmdbTitle]:
         """Fetch genres + keywords for one IMDb title. None if not on TMDB."""
@@ -114,7 +126,7 @@ class TmdbClient:
         if found is None:
             return None
         tmdb_id, media_type = found
-        genres, keywords = self.fetch_features(tmdb_id, media_type)
+        genres, keywords, _ = self.fetch_features(tmdb_id, media_type)
         return TmdbTitle(
             imdb_id=imdb_id,
             tmdb_id=tmdb_id,

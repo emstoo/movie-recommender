@@ -105,7 +105,8 @@ def cmd_recommend(args: argparse.Namespace) -> int:
             candidate_index=candidates.index, top_n=args.top_n,
         )
         meta = candidates.loc[ranked.index]
-        cols = [c for c in ("Title", "media_type", "original_language") if c in meta.columns]
+        cols = [c for c in ("Title", "media_type", "original_language", "tmdb_id")
+                if c in meta.columns]
         out = ranked.join(meta[cols])[cols + ["score"]]
         header = "Top unwatched recommendations (TMDB candidate pool):"
     else:
